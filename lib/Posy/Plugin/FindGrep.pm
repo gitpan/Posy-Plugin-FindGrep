@@ -7,11 +7,11 @@ Posy::Plugin::FindGrep - Posy plugin to find files using grep.
 
 =head1 VERSION
 
-This describes version B<0.10> of Posy::Plugin::FindGrep.
+This describes version B<0.20> of Posy::Plugin::FindGrep.
 
 =cut
 
-our $VERSION = '0.10';
+our $VERSION = '0.20';
 
 =head1 SYNOPSIS
 
@@ -66,7 +66,39 @@ In the actions list 'findgrep_set' needs to go somewhere after
 B<head_template> and before B<head_render>, since this needs
 to set values before the head is rendered.
 
+=head2 Configuration
+
+This expects configuration settings in the $self->{config} hash,
+which, in the default Posy setup, can be defined in the main "config"
+file in the config directory.
+
+=over
+
+=item B<findgrep_use_egrep>
+
+Use egrep instead of grep. (default: false)
+
+=back
+
 =cut
+
+=head1 OBJECT METHODS
+
+Documentation for developers and those wishing to write plugins.
+
+=head2 init
+
+Do some initialization; make sure that default config values are set.
+
+=cut
+sub init {
+    my $self = shift;
+    $self->SUPER::init();
+
+    # set defaults
+    $self->{config}->{findgrep_use_egrep} = 0
+	if (!defined $self->{config}->{findgrep_use_egrep});
+} # init
 
 =head1 Flow Action Methods
 
@@ -105,7 +137,9 @@ sub select_by_path {
 	    my $path = $1; # untaint
 	    $path = '' if (!$self->{path}->{cat_id});
 	    my $fullpath = File::Spec->catdir($self->{data_dir}, $path);
-	    open FROMGREP, "-|" or exec 'grep', '-rl', $find_regex, $fullpath or die "grep failed: $!\n";
+	    my $progname = ($self->{config}->{findgrep_use_egrep}
+		? 'egrep' : 'grep');
+	    open FROMGREP, "-|" or exec $progname, '-rl', $find_regex, $fullpath or die "grep failed: $!\n";
 	    while (my $ffile = <FROMGREP>)
 	    {
 		chomp $ffile;
@@ -156,17 +190,28 @@ sub findgrep_set {
     my $self = shift;
     my $flow_state = shift;
 
+    my $search_label = 'Search';
+    if ($self->{path}->{cat_id} eq '')
+    {
+	$search_label = 'Search Site';
+    }
+    else
+    {
+	$search_label = 'Search Here';
+    }
     my $action = $self->{url} . $self->{path}->{info};
     my $form = join('', '<form style="display: inline; margin:0; padding:0;" method="get" action="', $action, '">',
-	'<input type="submit" value="Search"/>',
+	'<input type="submit" value="', $search_label, '"/>',
 	'<input type="text" name="find"/>',
 	'</form>');
     $flow_state->{findgrep_form} = $form;
     1;
 } # findgrep_set
+
 =head1 REQUIRES
 
     Test::More
+    grep
 
 =head1 SEE ALSO
 

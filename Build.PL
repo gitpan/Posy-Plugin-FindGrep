@@ -8,7 +8,7 @@ my $builder = Module::Build->new(
     dist_author         => 'Kathryn Andersen',
     dist_version_from   => 'lib/Posy/Plugin/FindGrep.pm',
 	requires            => {
-	'Posy' => 0.60,
+	'Posy' => 0.72,
 	},
     build_requires => {
         'Test::More' => 0,

@@ -1,6 +1,18 @@
 Revision history for Posy-Plugin-FindGrep
 =========================================
 
+0.20 Fri 28 January 2005
+------------------------
+
+  * (28 Jan 2005) findgrep_use_egrep option
+  	Added a config option to enable the use of egrep instead
+  of grep, if the user so chooses.
+
+  * (28 Jan 2005) changed the search label
+  	Since it has a different behaviour depending on whether it
+  is at the top of the site or in a subdir, thought I should change the
+  'Search' label to reflect this.
+
 0.10 Mon 17 January 2005
 ------------------------
 

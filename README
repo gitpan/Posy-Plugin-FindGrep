@@ -6,7 +6,7 @@ Posy::Plugin::FindGrep - Posy plugin to find files using grep.
 
 ==== VERSION ====
 
-This describes version ``0.10'' of Posy::Plugin::FindGrep.
+This describes version ``0.20'' of Posy::Plugin::FindGrep.
 
 
 ==== DESCRIPTION ====
@@ -40,6 +40,22 @@ with other plugins if they override the same method.
 In the actions list 'findgrep_set' needs to go somewhere after
 ``head_template'' and before ``head_render'', since this needs to set values
 before the head is rendered.
+
+
+==   Configuration   ==
+
+This expects configuration settings in the $self->{config} hash, which, in
+the default Posy setup, can be defined in the main "config" file in the
+config directory.
+
+``findgrep_use_egrep''
+Use egrep instead of grep. (default: false)
+
+
+==== REQUIRES ====
+
+    Test::More
+    grep
 
 
 ==== AUTHOR ====
