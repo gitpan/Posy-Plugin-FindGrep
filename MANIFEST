@@ -1,0 +1,11 @@
+Build.PL
+Changes
+lib/Posy/Plugin/FindGrep.pm
+MANIFEST			This list of files
+MANIFEST.SKIP
+README
+t/00_dist.t
+t/pod-coverage.t
+t/pod.t
+TODO
+META.yml

@@ -1,0 +1,58 @@
+
+==== NAME ====
+
+Posy::Plugin::FindGrep - Posy plugin to find files using grep.
+
+
+==== VERSION ====
+
+This describes version ``0.10'' of Posy::Plugin::FindGrep.
+
+
+==== DESCRIPTION ====
+
+This plugin checks the 'find' parameter, and uses the 'grep' program to find
+files which match the given regular expression. This requires a version of
+'grep' which accepts the '-l' and '-r' arguments, which means that this
+plugin will not work on all systems even if they have a 'grep' command.
+
+This fills in a few variables which can be used withing your flavour
+templates.
+
+$flow_findgrep_form
+Contains a search-form definition for setting the 'find' parameter.
+
+$flow_find
+Contains the search parameter only if a search was done -- that is, the
+*legal* search parameter. This may be preferred to be used rather than
+$param_find in your flavour template files.
+
+$flow_num_found
+The number of entries which were found which matched the search parameter.
+
+
+==   Activation   ==
+
+This plugin needs to be added to the plugins list and the actions list.
+Since this overrides the 'select_by_path' method, care needs to be taken
+with other plugins if they override the same method.
+
+In the actions list 'findgrep_set' needs to go somewhere after
+``head_template'' and before ``head_render'', since this needs to set values
+before the head is rendered.
+
+
+==== AUTHOR ====
+
+    Kathryn Andersen (RUBYKAT)
+    perlkat AT katspace dot com
+    http://www.katspace.com
+
+
+==== COPYRIGHT AND LICENCE ====
+
+Copyright (c) 2005 by Kathryn Andersen
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
