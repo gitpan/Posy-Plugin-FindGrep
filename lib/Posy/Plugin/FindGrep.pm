@@ -7,11 +7,11 @@ Posy::Plugin::FindGrep - Posy plugin to find files using grep.
 
 =head1 VERSION
 
-This describes version B<0.21> of Posy::Plugin::FindGrep.
+This describes version B<0.22> of Posy::Plugin::FindGrep.
 
 =cut
 
-our $VERSION = '0.21';
+our $VERSION = '0.22';
 
 =head1 SYNOPSIS
 

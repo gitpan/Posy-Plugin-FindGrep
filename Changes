@@ -1,6 +1,13 @@
 Revision history for Posy-Plugin-FindGrep
 =========================================
 
+0.22 Thu 12 May 2005
+--------------------
+
+  * (12 May 2005) update Posy version
+
+  * (12 May 2005) add Makefile.PL
+
 0.21 Sun 06 February 2005
 -------------------------
 

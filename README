@@ -6,7 +6,7 @@ Posy::Plugin::FindGrep - Posy plugin to find files using grep.
 
 ==== VERSION ====
 
-This describes version ``0.21'' of Posy::Plugin::FindGrep.
+This describes version ``0.22'' of Posy::Plugin::FindGrep.
 
 
 ==== DESCRIPTION ====
