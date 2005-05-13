@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name: Posy-Plugin-FindGrep
-version: 0.22
+version: 0.23
 author:
   - Kathryn Andersen
 abstract: Posy plugin to find files using grep.
@@ -12,5 +12,5 @@ build_requires:
 provides:
   Posy::Plugin::FindGrep:
     file: lib/Posy/Plugin/FindGrep.pm
-    version: 0.22
+    version: 0.23
 generated_by: Module::Build version 0.261

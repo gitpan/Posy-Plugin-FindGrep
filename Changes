@@ -1,6 +1,15 @@
 Revision history for Posy-Plugin-FindGrep
 =========================================
 
+0.23 Fri 13 May 2005
+--------------------
+
+  * (13 May 2005) make things work better with hybrid sites
+  	Added 'findgrep_url' config variable, and changed the form,
+  so that for hybrid sites, the CGI script will still be called, even
+  if this form is called from a static page.
+  	This doesn't work with the Canonical plugin, though.
+
 0.22 Thu 12 May 2005
 --------------------
 

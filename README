@@ -6,7 +6,7 @@ Posy::Plugin::FindGrep - Posy plugin to find files using grep.
 
 ==== VERSION ====
 
-This describes version ``0.22'' of Posy::Plugin::FindGrep.
+This describes version ``0.23'' of Posy::Plugin::FindGrep.
 
 
 ==== DESCRIPTION ====
@@ -31,6 +31,15 @@ $flow_num_found
 The number of entries which were found which matched the search parameter.
 
 
+==   Cautions   ==
+
+This plugin does not work if you have a hybrid site (partially
+static-generated, partially dynamic) and also use the
+Posy::Plugin:;Canonical plugin, since the Canonical plugin will redirect
+your search query. Also, if you have a hybrid site, don't forget to set the
+"findgrep_url" config variable.
+
+
 ==   Activation   ==
 
 This plugin needs to be added to the plugins list and the actions list.
@@ -50,6 +59,13 @@ config directory.
 
 ``findgrep_use_egrep''
 Use egrep instead of grep. (default: false)
+
+``findgrep_url''
+The URL to use for the "action" part of the search form. This defaults to
+the global $self->{url} value, but may need to be overridden for things like
+a hybrid static/dynamic site. This is because the global $self->{url} for
+static generation needs to hide the name of the script used to generate it,
+but this plugin needs to know the path to the CGI script.
 
 
 ==== INSTALLATION ====

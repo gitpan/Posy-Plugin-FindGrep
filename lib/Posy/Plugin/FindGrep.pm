@@ -7,11 +7,11 @@ Posy::Plugin::FindGrep - Posy plugin to find files using grep.
 
 =head1 VERSION
 
-This describes version B<0.22> of Posy::Plugin::FindGrep.
+This describes version B<0.23> of Posy::Plugin::FindGrep.
 
 =cut
 
-our $VERSION = '0.22';
+our $VERSION = '0.23';
 
 =head1 SYNOPSIS
 
@@ -56,6 +56,14 @@ The number of entries which were found which matched the search parameter.
 
 =back
 
+=head2 Cautions
+
+This plugin does not work if you have a hybrid site (partially
+static-generated, partially dynamic) and also use the
+Posy::Plugin:;Canonical plugin, since the Canonical plugin will redirect
+your search query.  Also, if you have a hybrid site, don't forget to set
+the L</findgrep_url> config variable.
+
 =head2 Activation
 
 This plugin needs to be added to the plugins list and the actions list.
@@ -78,6 +86,15 @@ file in the config directory.
 
 Use egrep instead of grep. (default: false)
 
+=item B<findgrep_url>
+
+The URL to use for the "action" part of the search form.
+This defaults to the global $self->{url} value, but may
+need to be overridden for things like a hybrid static/dynamic site.
+This is because the global $self->{url} for static generation
+needs to hide the name of the script used to generate it,
+but this plugin needs to know the path to the CGI script.
+
 =back
 
 =cut
@@ -98,6 +115,8 @@ sub init {
     # set defaults
     $self->{config}->{findgrep_use_egrep} = 0
 	if (!defined $self->{config}->{findgrep_use_egrep});
+    $self->{config}->{findgrep_url} = ''
+	if (!defined $self->{config}->{findgrep_url});
 } # init
 
 =head1 Flow Action Methods
@@ -199,10 +218,14 @@ sub findgrep_set {
     {
 	$search_label = 'Search Here';
     }
-    my $action = $self->{url} . $self->{path}->{info};
+    my $action = ($self->{config}->{findgrep_url}
+	? $self->{config}->{findgrep_url} : $self->{url});
+    # Set the path as a separate parameter
+    my $path = $self->{path}->{info};
     my $form = join('', '<form style="display: inline; margin:0; padding:0;" method="get" action="', $action, '">',
 	'<input type="submit" value="', $search_label, '"/>',
 	'<input type="text" name="find"/>',
+	'<input type="hidden" name="path" value="', $path, '"/>',
 	'</form>');
     $flow_state->{findgrep_form} = $form;
     1;
