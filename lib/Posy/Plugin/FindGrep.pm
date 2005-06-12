@@ -7,11 +7,11 @@ Posy::Plugin::FindGrep - Posy plugin to find files using grep.
 
 =head1 VERSION
 
-This describes version B<0.23> of Posy::Plugin::FindGrep.
+This describes version B<0.24> of Posy::Plugin::FindGrep.
 
 =cut
 
-our $VERSION = '0.23';
+our $VERSION = '0.24';
 
 =head1 SYNOPSIS
 
@@ -35,7 +35,10 @@ This requires a version of 'grep' which accepts the '-l' and '-r'
 arguments, which means that this plugin will not work on all
 systems even if they have a 'grep' command.
 
-This fills in a few variables which can be used withing your
+This plugin sets the page-type to 'find', so that one can make find-specific
+flavour templates.  Then it falls back on the 'category' page-type.
+
+This fills in a few variables which can be used within your
 flavour templates.
 
 =over
@@ -67,8 +70,13 @@ the L</findgrep_url> config variable.
 =head2 Activation
 
 This plugin needs to be added to the plugins list and the actions list.
-Since this overrides the 'select_entries' method, care needs to be
-taken with other plugins if they override the same method.
+This
+overrides the 'select_entries'
+'parse_path'
+'get_alt_path_types'
+methods;
+therefore care needs to be
+taken with other plugins if they override the same methods.
 
 In the actions list 'findgrep_set' needs to go somewhere after
 B<head_template> and before B<head_render>, since this needs
@@ -94,6 +102,8 @@ need to be overridden for things like a hybrid static/dynamic site.
 This is because the global $self->{url} for static generation
 needs to hide the name of the script used to generate it,
 but this plugin needs to know the path to the CGI script.
+If this is set, this plugin assumes this is a hybrid site
+and makes its links with explicit 'path' parameters.
 
 =back
 
@@ -123,12 +133,36 @@ sub init {
 
 Methods implementing actions.
 
+=head2 parse_path
+
+Parse the PATH_INFO (or 'path' parameter) to get the parts of the path
+and figure out various bits of information about the path.
+
+Calls the parent 'parse_path' then checks if the 'find' parameter
+is set (and there is no error), and sets the path-type to find, if so.
+
+=cut
+sub parse_path {
+    my $self = shift;
+    my $flow_state = shift;
+
+    $self->SUPER::parse_path($flow_state);
+
+    if (!$self->{path}->{error} 
+	&& $self->param('find'))
+    {
+	$self->{path}->{type} = 'find';
+    }
+
+    1;
+} # parse_path
+
 =head2 select_entries
 
 $self->select_entries($flow_state);
 
-If there is a 'find' parameter set, checks and uses the value as a regular
-expression to grep for files.  Uses the category directory given
+If the path-type is 'find', checks and uses the 'find' parameter value as a
+regular expression to grep for files.  Uses the category directory given
 in the path as the directory to start from.
 Sets $flow_state->{find} if the find parameter is legal.
 Sets $flow_state->{num_found} to the number of matching entries.
@@ -143,7 +177,7 @@ sub select_entries {
     my $self = shift;
     my $flow_state = shift;
 
-    if ($self->param('find'))
+    if ($self->{path}->{type} eq 'find')
     {
 	my $find_param = $self->param('find');
 	$find_param =~ /([^`'"]+)/; # untaint
@@ -159,6 +193,7 @@ sub select_entries {
 	    my $progname = ($self->{config}->{findgrep_use_egrep}
 		? 'egrep' : 'grep');
 	    open FROMGREP, "-|" or exec $progname, '-rl', $find_regex, $fullpath or die "grep failed: $!\n";
+	    my %found_ids = ();
 	    while (my $ffile = <FROMGREP>)
 	    {
 		chomp $ffile;
@@ -169,19 +204,22 @@ sub select_entries {
 		my $file_id = join('/', @path_split);
 		if (exists $self->{files}->{$file_id})
 		{
-		    push @{$flow_state->{entries}}, $file_id;
+		    # save the found ids in the hash, to remove duplicates
+		    # (duplicates are possible if using something like
+		    # Posy::Plugin::Info (for the info files)
+		    # which could be considered a bug, because the .info
+		    # file could match the grep and not the original, but
+		    # I'm not going to worry about it now.
+		    $found_ids{$file_id} = 1;
 		}
 	    }
 	    close(FROMGREP);
-	    # if more than one entry was found
-	    # then change the path parsing to a 'category' path.
-	    if (@{$flow_state->{entries}} > 1)
+	    # now put all the found entries into the entry array
+	    while (my $fid = each(%found_ids))
 	    {
-		$self->{path}->{type} =~ s/entry/category/;
-		$self->{path}->{file_key} = $self->{path}->{cat_id};
-		$self->{path}->{ext} = '';
-		$self->{path}->{data_file} = '';
+		push @{$flow_state->{entries}}, $fid;
 	    }
+	    
 	    my $num_found = @{$flow_state->{entries}};
 	    $flow_state->{num_found} = $num_found;
 	}
@@ -218,18 +256,62 @@ sub findgrep_set {
     {
 	$search_label = 'Search Here';
     }
-    my $action = ($self->{config}->{findgrep_url}
-	? $self->{config}->{findgrep_url} : $self->{url});
-    # Set the path as a separate parameter
     my $path = $self->{path}->{info};
-    my $form = join('', '<form style="display: inline; margin:0; padding:0;" method="get" action="', $action, '">',
-	'<input type="submit" value="', $search_label, '"/>',
-	'<input type="text" name="find"/>',
-	'<input type="hidden" name="path" value="', $path, '"/>',
-	'</form>');
+    my $action;
+    my $form = '';
+    if ($self->{config}->{findgrep_url})
+    {
+	$action = $self->{config}->{findgrep_url};
+	# Set the path as a separate parameter
+	$form = join('', '<form style="display: inline; margin:0; padding:0;" method="get" action="', $action, '">',
+			'<input type="submit" value="', $search_label, '"/>',
+			'<input type="text" name="find"/>',
+			'<input type="hidden" name="path" value="', $path, '"/>',
+			'</form>');
+    }
+    else
+    {
+	$action = $self->{url} . $path;
+	$form = join('', '<form style="display: inline; margin:0; padding:0;" method="get" action="', $action, '">',
+			'<input type="submit" value="', $search_label, '"/>',
+			'<input type="text" name="find"/>',
+			'</form>');
+    }
     $flow_state->{findgrep_form} = $form;
     1;
 } # findgrep_set
+
+=head1 Helper Methods
+
+Methods which can be called from within other methods.
+
+=head2 get_alt_path_types
+
+my @alt_path_types = $self->get_alt_path_types($path_type)
+
+Return an array of possible alternative path-types (to use
+for matching in things like get_template and get_config).
+The array may be empty.
+
+If the path-type is 'find' returns alternatives; otherwise
+calls the parent method.
+
+=cut
+sub get_alt_path_types {
+    my $self = shift;
+    my $path_type = shift;
+
+    if ($path_type eq 'find')
+    {
+	my @alt_pts = ('category');
+
+	return @alt_pts;
+    }
+    else
+    {
+	return $self->SUPER::get_alt_path_types($path_type);
+    }
+} # get_alt_path_types
 
 =head1 INSTALLATION
 

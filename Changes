@@ -1,6 +1,15 @@
 Revision history for Posy-Plugin-FindGrep
 =========================================
 
+0.24 Sun 12 June 2005
+---------------------
+
+  * (12 Jun 2005) added 'find' path-type
+  	This now overrides 'parse_path' and 'get_alt_path_types' to
+  enable one to set flavour templates and config files which are used
+  when 'find' is true.  Which is nice, because one can tailor one's
+  find results.
+
 0.23 Fri 13 May 2005
 --------------------
 
